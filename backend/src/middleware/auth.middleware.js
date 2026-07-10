@@ -3,26 +3,27 @@ import { User } from "../models/User.model.js";
 
 const verifyJWT = async (req, res, next) => {
   try {
-    const authHeader = req.header("Authorization");
-    console.log("Authorization Header:", authHeader);
+    console.log("Authorization Header:", req.headers.authorization);
+
+    const authHeader = req.headers.authorization;
 
     if (!authHeader) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized request",
+        message: "No Authorization header",
       });
     }
 
-    const token = authHeader.replace("Bearer ", "");
-    console.log("Token:", token);
+    const token = authHeader.split(" ")[1];
 
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
+    console.log("Received Token:");
+    console.log(token);
 
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Token:", token);
-    console.log("Token Length:", token.length);
-    console.log("Decoded Token:", decodedToken);
-    const user = await User.findById(decodedToken.id).select("-password");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    console.log(decoded);
+
+    const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
       return res.status(401).json({
@@ -34,14 +35,14 @@ const verifyJWT = async (req, res, next) => {
     req.user = user;
 
     next();
-  } catch (error) {
-  console.log(error);
+  } catch (err) {
+    console.log(err);
 
-  return res.status(401).json({
-    success: false,
-    message: "Invalid or expired token",
-  });
-}
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token",
+    });
+  }
 };
 
 export { verifyJWT };

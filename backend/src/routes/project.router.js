@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { createProject } from "../controllers/project.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
+import {
+    createProject,
+    getAllProjects,
+} from "../controllers/project.controller.js";
 
 const router = Router();
+router.post("/", createProject);
 
-router.post("/", verifyJWT, createProject);
+router.get("/", getAllProjects);
 
 export default router;

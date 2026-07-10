@@ -15,7 +15,7 @@ const createProject = async (req, res) => {
     const project = await Project.create({
       title,
       description,
-      owner: req.user._id,
+      owner: "6a42d8d535cfff4e9eefa035"
     });
 
     res.status(201).json({
@@ -30,7 +30,29 @@ const createProject = async (req, res) => {
     });
   }
 };
+// ================= GET ALL PROJECTS =================
+
+const getAllProjects = async (req, res) => {
+  try {
+    const projects = await Project.find();
+
+    res.status(200).json({
+      success: true,
+      count: projects.length,
+      data: projects,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+
+  }
+};
 
 export {
   createProject,
+  getAllProjects,
 };
