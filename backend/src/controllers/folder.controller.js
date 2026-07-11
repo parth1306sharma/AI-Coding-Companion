@@ -34,7 +34,27 @@ const createFolder = async (req, res) => {
 
   }
 };
+const getProjectTree = async (req, res) => {
+  try {
+    const { projectId } = req.params;
 
+    const folders = await Folder.find({ project: projectId });
+    const files = await File.find({ project: projectId });
+
+    res.status(200).json({
+      success: true,
+      folders,
+      files,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 export {
-  createFolder,
+    createFolder,
+    getProjectTree,
 };
