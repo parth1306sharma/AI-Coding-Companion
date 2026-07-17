@@ -8,6 +8,7 @@ import {
     deleteProject,
 } from "../controllers/project.controller.js";
 const router = Router();
+router.get("/:id", getProjectById);
 router.post("/", createProject);
 router.delete("/:id", deleteProject);
 router.get("/", getAllProjects);

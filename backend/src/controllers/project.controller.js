@@ -148,6 +148,7 @@ const deleteProject = async (req, res) => {
 
   }
 };
+
 export {
     createProject,
     getAllProjects,
