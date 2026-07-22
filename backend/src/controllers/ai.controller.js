@@ -6,149 +6,124 @@ export const chat = async (req, res) => {
 
     const message = prompt.toLowerCase();
 
-    let finalPrompt = "";
+    let task = "";
 
-    // ========= Explain =========
     if (
       message.includes("explain") ||
-      message.includes("what does this") ||
-      message.includes("how does this")
+      message.includes("what does") ||
+      message.includes("how does")
     ) {
-      finalPrompt = `
-You are an expert software engineer.
+      task = `
+Explain the code using the following format:
 
-Explain the following code in simple language.
+# Overview
+# How it Works
+# Key Components
+# Best Practices
+# Possible Improvements
 
-Include:
-- Overview
-- How it works
-- Important parts
-- Best practices
-- Possible improvements
-
-Return Markdown.
-
-Code:
-
-\`\`\`
-${code}
-\`\`\`
+Use Markdown.
 `;
-    }
-
-    // ========= Find Bugs =========
-    else if (
+    } else if (
       message.includes("bug") ||
       message.includes("error") ||
       message.includes("issue") ||
       message.includes("problem")
     ) {
-      finalPrompt = `
-You are a senior software engineer.
-
-Review the following code.
+      task = `
+Review the code.
 
 Find:
 - Bugs
 - Runtime errors
-- Logical mistakes
+- Logic mistakes
 - Edge cases
 - Security issues
 
-If no bugs exist, say so.
+If nothing is wrong, clearly say:
+"No major issues were found."
 
-Return Markdown.
-
-Code:
-
-\`\`\`
-${code}
-\`\`\`
+Use Markdown.
 `;
-    }
-
-    // ========= Optimize =========
-    else if (
+    } else if (
       message.includes("optimize") ||
       message.includes("performance") ||
       message.includes("improve")
     ) {
-      finalPrompt = `
-Optimize this code.
+      task = `
+Optimize the code.
 
 Suggest:
-
-- Cleaner code
 - Better performance
-- Better readability
-- React best practices
 - Cleaner architecture
+- Better readability
+- Best React/JavaScript practices
 
-Return improved code when necessary.
+Show improved code where useful.
 
-Code:
-
-\`\`\`
-${code}
-\`\`\`
+Use Markdown.
 `;
-    }
-
-    // ========= Add Comments =========
-    else if (
+    } else if (
       message.includes("comment") ||
       message.includes("documentation")
     ) {
-      finalPrompt = `
-Add meaningful comments to this code.
+      task = `
+Add meaningful comments.
 
-Do not change functionality.
+Do NOT change the functionality.
 
-Return only the commented code.
-
-Code:
-
-\`\`\`
-${code}
-\`\`\`
+Return only the updated code.
 `;
-    }
-
-    // ========= Convert to TypeScript =========
-    else if (
+    } else if (
       message.includes("typescript") ||
       message.includes("convert")
     ) {
-      finalPrompt = `
+      task = `
 Convert this JavaScript code into TypeScript.
 
-Explain any required changes.
+Explain important changes.
 
-Code:
+Return Markdown.
+`;
+    } else {
+      task = `
+Answer the user's programming question.
+
+If code changes are needed,
+provide the updated code inside Markdown code blocks.
+
+Be concise and professional.
+`;
+    }
+
+    const finalPrompt = `
+You are an expert software engineer and coding assistant.
+
+You are helping a developer inside an online IDE.
+
+Current File Code:
 
 \`\`\`
 ${code}
 \`\`\`
+
+User Request:
+
+${prompt}
+
+Task:
+
+${task}
+
+Rules:
+
+- Always consider the current code.
+- If code needs modification, return the updated code.
+- Wrap code inside proper Markdown code blocks.
+- Keep explanations concise.
+- Never invent missing code.
+- Respond professionally.
 `;
-    }
-
-    // ========= General Programming =========
-    else if (
-      message.includes("react") ||
-      message.includes("javascript") ||
-      message.includes("node") ||
-      message.includes("express") ||
-      message.includes("mongodb") ||
-      message.includes("css") ||
-      message.includes("html")
-    ) {
-      finalPrompt = prompt;
-    }
-
-    // ========= Everything Else =========
-    else {
-      finalPrompt = prompt;
-    }
 
     const reply = await askGemini(finalPrompt);
 

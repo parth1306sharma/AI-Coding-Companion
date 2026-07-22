@@ -5,3 +5,61 @@
   padding:0;
   box-sizing:border-box;
 }
+
+.problem-html p {
+  margin: 14px 0;
+  line-height: 1.8;
+}
+
+.problem-html ul {
+  margin: 12px 0;
+  padding-left: 24px;
+  list-style: disc;
+}
+
+.problem-html ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.problem-html li {
+  margin: 6px 0;
+}
+
+.problem-html pre {
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.problem-html code {
+  font-family: Consolas, monospace;
+}
+
+.problem-html .section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #22d3ee;
+  margin: 24px 0 12px;
+}
+
+.problem-html table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.problem-html td,
+.problem-html th {
+  border: 1px solid #444;
+  padding: 8px;
+}
+
+.problem-html img {
+  max-width: 100%;
+}
+
+.problem-html span {
+  white-space: normal;
+}

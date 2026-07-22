@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import MarkdownRenderer from "./MarkdownRenderer";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -19,24 +20,22 @@ function CodeBlock({
   };
 
   const insertCode = () => {
-    console.log("Insert clicked");
+  if (!editorRef?.current) return;
 
-    if (!editorRef) return;
+  const editor = editorRef.current;
 
-    const editor = editorRef.current;
+  // Replace entire editor content
+  const model = editor.getModel();
 
-    if (!editor) return;
 
-    editor.executeEdits("ai", [
-      {
-        range: editor.getSelection(),
-        text: value,
-        forceMoveMarkers: true,
-      },
-    ]);
+  editor.focus();
 
-    editor.focus();
-  };
+  // Update React state
+  if (setCode) {
+    setCode(value);
+  }
+  alert("✅ Code inserted into editor");
+};
   return (
     <div className="my-4 rounded-lg overflow-hidden border border-gray-700">
       <div className="flex justify-between items-center bg-[#2d2d2d] px-4 py-2">
@@ -149,41 +148,98 @@ function AIChat({
     <div className="w-[430px] flex flex-col bg-[#1e1e1e] border-l border-gray-700">
 
       {/* Header */}
+<div className="h-16 bg-[#181818] border-b border-[#2d2d2d] flex items-center justify-between px-5">
 
-      <div className="p-4 border-b border-gray-700">
-        <h2 className="text-3xl font-bold text-white">
-          🤖 AI Assistant
-        </h2>
-      </div>
+  <div>
 
+    <h2 className="text-white text-lg font-bold">
+      🤖 AI Assistant
+    </h2>
+
+    <p className="text-xs text-gray-500">
+      Powered by Gemini 2.5 Flash
+    </p>
+
+  </div>
+
+  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+
+</div>
       {/* Chat */}
 
       <div className="flex-1 overflow-y-auto p-4">
 
-        {messages.length === 0 && (
-          <>
-            <h3 className="text-2xl font-semibold text-white mb-3">
-              Welcome 👋
+       {messages.length === 0 && (
+  <div className="h-full flex flex-col justify-center">
+
+    <div className="text-center">
+
+      <div className="text-6xl mb-5">
+        🤖
+      </div>
+
+      <h2 className="text-3xl font-bold text-white">
+        AI Assistant
+      </h2>
+
+      <p className="text-gray-400 mt-2 mb-8">
+        Your personal coding companion powered by Gemini
+      </p>
+
+    </div>
+
+    <div className="grid gap-3">
+
+      {[
+        {
+          icon: "💡",
+          title: "Explain Code",
+          prompt: "Explain this code",
+        },
+        {
+          icon: "🐞",
+          title: "Find Bugs",
+          prompt: "Find bugs in this code",
+        },
+        {
+          icon: "⚡",
+          title: "Optimize Code",
+          prompt: "Optimize this code",
+        },
+        {
+          icon: "📝",
+          title: "Generate Component",
+          prompt: "Generate a React component",
+        },
+        {
+          icon: "🔄",
+          title: "Convert to TypeScript",
+          prompt: "Convert this code to TypeScript",
+        },
+      ].map((item) => (
+        <button
+          key={item.title}
+          onClick={() => sendMessage(item.prompt)}
+          className="flex items-center gap-4 p-4 rounded-xl bg-[#252526] border border-[#323232] hover:border-blue-500 hover:bg-[#2d2d30] transition-all duration-300 hover:scale-[1.02]"
+        >
+          <span className="text-2xl">{item.icon}</span>
+
+          <div className="text-left">
+            <h3 className="text-white font-semibold">
+              {item.title}
             </h3>
 
-            <p className="text-gray-400 mb-5">
-              Ask anything about your code.
+            <p className="text-xs text-gray-400">
+              Click to ask AI
             </p>
+          </div>
+        </button>
+      ))}
 
-            <div className="space-y-2">
-              {suggestions.map((item) => (
-                <button
-                  key={item}
-                  disabled={loading}
-                  onClick={() => sendMessage(item)}
-                  className="w-full text-left bg-[#2d2d2d] hover:bg-[#3a3a3a] rounded-lg px-4 py-3 text-white transition"
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+    </div>
+
+  </div>
+)}
 
         {messages.map((msg, index) => (
           <div
@@ -194,10 +250,13 @@ function AIChat({
               }`}
           >
             <div
-              className={`inline-block rounded-xl px-4 py-3 max-w-full ${msg.role === "user"
-                ? "bg-blue-600 text-white"
-                : "bg-[#2d2d2d] text-white"
-                }`}
+             className={`inline-block rounded-2xl px-5 py-4 shadow-lg max-w-full
+
+${
+msg.role === "user"
+? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white"
+: "bg-[#252526] border border-[#323232] text-white"
+}`}
             >
               <div className="font-semibold mb-2">
                 {msg.role === "user"
@@ -205,58 +264,65 @@ function AIChat({
                   : "🤖 AI"}
               </div>
 
-              {msg.role === "assistant" ? (
-                <div className="prose prose-invert max-w-none">
+             {msg.role === "assistant" ? (
+  <div className="prose prose-invert max-w-none">
+    <ReactMarkdown
+      components={{
+        code({ inline, className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || "");
 
-                  <ReactMarkdown
-                    components={{
-                      code({
-                        inline,
-                        className,
-                        children,
-                        ...props
-                      }) {
-                        const match =
-                          /language-(\w+)/.exec(
-                            className || ""
-                          );
+          if (!inline && match) {
+            return (
+              <CodeBlock
+                language={match[1]}
+                value={String(children).replace(/\n$/, "")}
+                setCode={setCode}
+                editorRef={editorRef}
+              />
+            );
+          }
 
-                        if (!inline && match) {
-                          return (
-                            <CodeBlock
-                              language={match[1]}
-                              value={String(children).replace(/\n$/, "")}
-                              setCode={setCode}
-                              editorRef={editorRef}
-                            />
-                          );
-                        }
-
-                        return (
-                          <code
-                            className={className}
-                            {...props}
-                          >
-                            {children}
-                          </code>
-                        );
-                      },
-                    }}
-                  >
-                    {msg.text}
-                  </ReactMarkdown>
-
-                </div>
-              ) : (
-                <p>{msg.text}</p>
-              )}
+          return (
+            <code className="bg-gray-800 px-1 py-0.5 rounded" {...props}>
+              {children}
+            </code>
+          );
+        },
+      }}
+    >
+      {msg.text}
+    </ReactMarkdown>
+  </div>
+) : (
+  <p className="whitespace-pre-wrap">{msg.text}</p>
+)}
             </div>
           </div>
         ))}
 
         {loading && (
           <div className="text-gray-400">
-            🤖 AI is thinking...
+            <div className="flex items-center gap-3 my-4">
+
+  <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
+    🤖
+  </div>
+
+  <div className="bg-[#252526] rounded-xl px-5 py-4 border border-[#323232]">
+
+    <div className="flex gap-2">
+
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-150"></div>
+
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-300"></div>
+
+    </div>
+
+  </div>
+
+</div>
           </div>
         )}
 
