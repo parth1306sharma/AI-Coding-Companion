@@ -17,8 +17,8 @@ export const askGemini = async (prompt) => {
           content: prompt,
         },
       ],
-      temperature: 0.7,
-      max_tokens: 1024,
+      temperature: 0.3,
+      max_tokens: 1800,
     });
 
     return completion.choices[0].message.content;

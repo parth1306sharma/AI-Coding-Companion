@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import renderMathInElement from "katex/contrib/auto-render";
 import "katex/dist/katex.min.css";
 
@@ -64,35 +64,19 @@ function HtmlSection({ html }) {
 function ProblemViewer({ problem }) {
   const containerRef = useRef(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
+  useLayoutEffect(() => {
+  if (!containerRef.current) return;
 
-    renderMathInElement(containerRef.current, {
-  delimiters: [
-    {
-      left: "\\(",
-      right: "\\)",
-      display: false,
-    },
-    {
-      left: "\\[",
-      right: "\\]",
-      display: true,
-    },
-    {
-      left: "$$",
-      right: "$$",
-      display: true,
-    },
-    {
-      left: "$",
-      right: "$",
-      display: false,
-    },
-  ],
-  throwOnError: false,
-});
-  }, [problem]);
+  renderMathInElement(containerRef.current, {
+    delimiters: [
+      { left: "$$$", right: "$$$", display: false },
+      { left: "\\(", right: "\\)", display: false },
+      { left: "\\[", right: "\\]", display: true },
+    ],
+    throwOnError: false,
+    strict: false,
+  });
+}, [problem]);
 
   if (!problem?.title) {
     return (

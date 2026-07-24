@@ -1,4 +1,12 @@
 import { chromium } from "playwright";
+import dotenv from "dotenv";
+dotenv.config();
+
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export const importProblem = async (url) => {
   console.log("=================================");
@@ -164,5 +172,55 @@ export const importProblem = async (url) => {
     throw err;
   } finally {
     await browser.close();
+  }
+};
+
+//----------------------------------------
+// Analyze Problem (via Groq)
+//----------------------------------------
+
+export const analyzeProblem = async (problem) => {
+  const prompt = `
+You are an expert competitive programming mentor.
+
+Analyze the following problem and respond with ONLY valid JSON
+(no markdown, no code fences, no extra text) matching exactly this shape:
+
+{
+  "explanation": "A very simple, beginner-friendly explanation of what the problem is asking, in 3-5 short sentences. Avoid jargon.",
+  "topics": ["Topic 1", "Topic 2", "Topic 3"],
+  "hints": [
+    "Hint 1 - a gentle nudge, does not give away the solution",
+    "Hint 2 - a bit more specific, points toward the approach",
+    "Hint 3 - close to the solution, describes the key idea"
+  ],
+  "timeComplexity": "O(...) with a short reason",
+  "spaceComplexity": "O(...) with a short reason"
+}
+
+Problem:
+${JSON.stringify(problem, null, 2)}
+`;
+
+  try {
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.4,
+      max_tokens: 1024,
+      response_format: { type: "json_object" },
+    });
+
+    const text = completion.choices[0].message.content;
+
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Groq analyze error:", error);
+    throw new Error("Failed to analyze problem.");
   }
 };

@@ -5,10 +5,22 @@ import ProblemPanel from "../components/problem/ProblemPanel";
 import CodeEditor from "../components/CodeEditor";
 import AIChat from "../components/AIChat";
 
-function Workspace() {
-  const [code, setCode] = useState(`function solve() {
+import { LANGUAGES } from "../utils/languages";
 
-}`);
+function Workspace() {
+  // ==========================
+  // Language & Code
+  // ==========================
+
+  const [language, setLanguage] = useState("cpp");
+
+  const [code, setCode] = useState(
+    LANGUAGES.cpp.template
+  );
+
+  // ==========================
+  // Problem
+  // ==========================
 
   const [problem, setProblem] = useState({
     platform: "",
@@ -24,8 +36,13 @@ function Workspace() {
     note: "",
   });
 
+  // ==========================
+  // Console
+  // ==========================
+
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
+
   const editorRef = useRef(null);
 
   return (
@@ -34,44 +51,38 @@ function Workspace() {
 
       <div className="flex flex-1 overflow-hidden">
 
-        {/* Left */}
-       <ProblemPanel
-  problem={problem}
-  setProblem={setProblem}
-/>
+        {/* Left Panel */}
+        <ProblemPanel
+          problem={problem}
+          setProblem={setProblem}
+        />
 
-        {/* Center */}
+        {/* Center Panel */}
         <div className="flex-1">
           <CodeEditor
             code={code}
-            selectedFile="solution.js"
-            setFiles={(updater) => {
-              const files = {
-                "solution.js": code,
-              };
-
-              const updated = updater(files);
-
-              setCode(updated["solution.js"]);
-            }}
+            setCode={setCode}
+            language={language}
+            setLanguage={setLanguage}
             editorRef={editorRef}
             output={output}
             setOutput={setOutput}
             running={running}
             setRunning={setRunning}
-
-            // Add these two lines
             sampleInput={problem.examples?.[0]?.input || ""}
             sampleOutput={problem.examples?.[0]?.output || ""}
           />
         </div>
 
-        {/* Right */}
+        {/* Right Panel */}
         <AIChat
           code={code}
           setCode={setCode}
+          language={language}
+          problem={problem}
           editorRef={editorRef}
         />
+
       </div>
     </div>
   );

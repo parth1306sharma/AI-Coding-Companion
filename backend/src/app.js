@@ -7,6 +7,7 @@ import userRouter from "./routes/user.router.js";
 import projectRouter from "./routes/project.router.js";
 import fileRouter from "./routes/file.router.js";
 import aiRouter from "./routes/ai.router.js";
+import executeRouter from "./routes/execute.router.js";
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/folders", folderRouter);
 app.use("/api/v1/files", fileRouter);
 app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/execute", executeRouter);
 
 export default app;

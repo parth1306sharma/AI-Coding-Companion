@@ -1,17 +1,25 @@
 import { useRef, useEffect } from "react";
 import Editor from "@monaco-editor/react";
+
 import { runCode } from "../services/runCode";
+import { LANGUAGES } from "../utils/languages";
 
 function CodeEditor({
   code,
-  selectedFile,
-  setFiles,
+  setCode,
+
+  language,
+  setLanguage,
+
   editorRef,
   setCursorPosition,
+
   output,
   setOutput,
+
   running,
   setRunning,
+
   sampleInput,
   sampleOutput,
 }) {
@@ -32,128 +40,123 @@ function CodeEditor({
   useEffect(() => {
     if (!monacoRef.current) return;
 
-    monacoRef.current.setValue(code);
+    if (monacoRef.current.getValue() !== code) {
+      monacoRef.current.setValue(code);
+    }
   }, [code]);
 
-  // ===============================
-  // Normal Run
-  // ===============================
-  const handleRun = async () => {
-    try {
-      setRunning(true);
-      setOutput("Running...");
-
-      const result = await runCode(
-        "javascript",
-        code
-      );
-
-      if (result.compile?.stderr) {
-        setOutput(result.compile.stderr);
-      } else if (result.run?.stderr) {
-        setOutput(result.run.stderr);
-      } else {
-        setOutput(result.run?.stdout || "Program finished.");
-      }
-    } catch (err) {
-      console.error(err);
-      setOutput("Execution failed.");
-    }
-
-    setRunning(false);
-  };
-
-  // ===============================
+  // ======================================
   // Run Sample Test
-  // ===============================
-  const handleRunSample = async () => {
+  // ======================================
+
+  const handleRun = async () => {
     if (!sampleInput) {
-      alert("No sample test available.");
+      setOutput("No sample test available.");
       return;
     }
 
     try {
       setRunning(true);
-      setOutput("Running sample test...");
+      setOutput("Running...");
 
       const result = await runCode(
-        "javascript",
+        language,
         code,
         sampleInput
       );
+
+      if (result.compile?.stderr) {
+        setOutput(result.compile.stderr);
+        return;
+      }
+
+      if (result.run?.stderr) {
+        setOutput(result.run.stderr);
+        return;
+      }
 
       const actual = (result.run?.stdout || "").trim();
       const expected = (sampleOutput || "").trim();
 
       const passed = actual === expected;
 
-      setOutput(`
-Expected Output
--------------------------
+      setOutput(`========== SAMPLE TEST ==========
+
+Input:
+${sampleInput}
+
+---------------------------------
+
+Expected Output:
 ${expected}
 
-Your Output
--------------------------
+---------------------------------
+
+Your Output:
 ${actual}
 
-=========================
+=================================
 
 ${passed ? "✅ PASSED" : "❌ FAILED"}
-      `);
+`);
     } catch (err) {
       console.error(err);
       setOutput("Execution failed.");
+    } finally {
+      setRunning(false);
     }
-
-    setRunning(false);
   };
 
   return (
     <div className="h-full flex flex-col">
 
       {/* Top Bar */}
-      <div className="h-12 bg-[#252526] border-b border-gray-700 flex justify-between items-center px-4">
 
-        <span className="text-gray-300">
-          {selectedFile}
-        </span>
+      <div className="h-12 bg-[#252526] border-b border-[#333] flex items-center justify-between px-4">
 
-        <div className="flex gap-2">
+        <select
+          value={language}
+          onChange={(e) => {
+            const lang = e.target.value;
 
-          <button
-            onClick={handleRun}
-            disabled={running}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 px-4 py-1 rounded text-white transition"
-          >
-            {running ? "Running..." : "▶ Run"}
-          </button>
+            setLanguage(lang);
+            setCode(LANGUAGES[lang].template);
+          }}
+          className="bg-[#1e1e1e] border border-[#444] rounded px-3 py-1 text-white"
+        >
+          {Object.entries(LANGUAGES).map(([key, value]) => (
+            <option
+              key={key}
+              value={key}
+            >
+              {value.name}
+            </option>
+          ))}
+        </select>
 
-          <button
-            onClick={handleRunSample}
-            disabled={running}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 px-4 py-1 rounded text-white transition"
-          >
-            🧪 Run Sample
-          </button>
-
-        </div>
+        <button
+          onClick={handleRun}
+          disabled={running}
+          className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 px-5 py-1 rounded text-white font-semibold transition"
+        >
+          {running ? "Running..." : "▶ Run"}
+        </button>
 
       </div>
 
       {/* Monaco Editor */}
+
       <div className="flex-1">
+
         <Editor
           height="100%"
           theme="vs-dark"
-          language="javascript"
+          language={language}
           value={code}
           onMount={handleMount}
-          onChange={(value) =>
-            setFiles((prev) => ({
-              ...prev,
-              [selectedFile]: value || "",
-            }))
-          }
+          onChange={(value) => {
+            setCode(value || "");
+          }}
           options={{
             fontSize: 15,
             minimap: {
@@ -163,16 +166,18 @@ ${passed ? "✅ PASSED" : "❌ FAILED"}
             scrollBeyondLastLine: false,
           }}
         />
+
       </div>
 
       {/* Console */}
-      <div className="h-48 bg-black border-t border-gray-700 overflow-auto p-4">
 
-        <h3 className="text-green-400 font-semibold mb-3">
+      <div className="h-52 bg-[#111111] border-t border-[#333333] flex flex-col">
+
+        <div className="px-4 py-2 border-b border-[#333333] text-sm font-semibold text-gray-400">
           Console
-        </h3>
+        </div>
 
-        <pre className="text-gray-200 whitespace-pre-wrap">
+        <pre className="flex-1 overflow-auto p-4 text-green-400 text-sm whitespace-pre-wrap font-mono">
           {output}
         </pre>
 

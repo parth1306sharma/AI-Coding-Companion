@@ -1,22 +1,13 @@
-export const runCode = async (language, code, input = "") => {
-  const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      language,
-      version: "*",
-      stdin: input,
-      files: [
-        {
-          content: code,
-        },
-      ],
-    }),
-  });
+import axios from "axios";
 
-  const data = await response.json();
+const API = "http://localhost:8000/api/v1/execute";
+
+export const runCode = async (language, code, input = "") => {
+  const { data } = await axios.post(API, {
+    language,
+    code,
+    input,
+  });
 
   console.log(data);
 

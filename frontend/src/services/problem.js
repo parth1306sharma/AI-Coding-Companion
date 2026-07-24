@@ -9,3 +9,11 @@ export const importProblem = async (url) => {
 
   return data.problem;
 };
+
+export const analyzeProblem = async (problem) => {
+  const { data } = await axios.post(`${API}/analyze`, {
+    problem,
+  });
+
+  return data.analysis;
+};

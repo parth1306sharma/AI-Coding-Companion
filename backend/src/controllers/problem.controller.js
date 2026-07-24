@@ -1,4 +1,7 @@
-import { importProblem } from "../services/problem.service.js";
+import {
+  importProblem,
+  analyzeProblem,
+} from "../services/problem.service.js";
 
 export const importProblemController = async (req, res) => {
   try {
@@ -22,14 +25,39 @@ export const importProblemController = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(
-      "Import Problem Controller Error:",
-      error
-    );
+    console.error("Import Problem Controller Error:", error);
 
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to import problem.",
+    });
+  }
+};
+
+export const analyzeProblemController = async (req, res) => {
+  try {
+    const { problem } = req.body;
+
+    if (!problem) {
+      return res.status(400).json({
+        success: false,
+        message: "Problem is required.",
+      });
+    }
+
+    const analysis = await analyzeProblem(problem);
+
+    return res.status(200).json({
+      success: true,
+      analysis,
+    });
+
+  } catch (error) {
+    console.error("Analyze Problem Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to analyze problem.",
     });
   }
 };
