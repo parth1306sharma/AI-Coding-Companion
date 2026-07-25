@@ -92,15 +92,31 @@ function ProblemViewer({ problem }) {
       className="bg-[#252526] rounded-xl border border-[#323232] p-5"
     >
       {/* Title */}
-      <h1 className="text-2xl font-bold text-white mb-2">
-        {problem.title}
-      </h1>
+      <div className="flex items-center gap-3 mb-2 flex-wrap">
+        <h1 className="text-2xl font-bold text-white">
+          {problem.title}
+        </h1>
+
+        {problem.platform && (
+          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/30">
+            {problem.platform}
+          </span>
+        )}
+
+        {problem.difficulty && (
+          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+            {problem.difficulty}
+          </span>
+        )}
+      </div>
 
       {/* Limits */}
-      <div className="flex gap-6 text-sm text-gray-400 mb-6">
-        <span>⏱ {problem.timeLimit}</span>
-        <span>💾 {problem.memoryLimit}</span>
-      </div>
+      {(problem.timeLimit || problem.memoryLimit) && (
+        <div className="flex gap-6 text-sm text-gray-400 mb-6">
+          {problem.timeLimit && <span>⏱ {problem.timeLimit}</span>}
+          {problem.memoryLimit && <span>💾 {problem.memoryLimit}</span>}
+        </div>
+      )}
 
       {/* Statement */}
       <section className="mb-8">
@@ -112,22 +128,37 @@ function ProblemViewer({ problem }) {
       </section>
 
       {/* Input */}
-      <section className="mb-8">
-        <h2 className="text-cyan-400 font-semibold text-lg mb-3">
-          Input
-        </h2>
+      {problem.input && (
+        <section className="mb-8">
+          <h2 className="text-cyan-400 font-semibold text-lg mb-3">
+            Input
+          </h2>
 
-        <HtmlSection html={problem.input} />
-      </section>
+          <HtmlSection html={problem.input} />
+        </section>
+      )}
 
       {/* Output */}
-      <section className="mb-8">
-        <h2 className="text-cyan-400 font-semibold text-lg mb-3">
-          Output
-        </h2>
+      {problem.output && (
+        <section className="mb-8">
+          <h2 className="text-cyan-400 font-semibold text-lg mb-3">
+            Output
+          </h2>
 
-        <HtmlSection html={problem.output} />
-      </section>
+          <HtmlSection html={problem.output} />
+        </section>
+      )}
+
+      {/* Constraints */}
+      {problem.constraints && (
+        <section className="mb-8">
+          <h2 className="text-cyan-400 font-semibold text-lg mb-3">
+            Constraints
+          </h2>
+
+          <HtmlSection html={problem.constraints} />
+        </section>
+      )}
 
       {/* Note */}
       {problem.note && (

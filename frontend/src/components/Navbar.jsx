@@ -9,17 +9,13 @@ function Navbar() {
 
         <div>
           <h1 className="text-white font-bold text-xl">
-            AI Coding Companion
+            OffByOne
           </h1>
 
           <p className="text-gray-400 text-xs">
             Competitive Programming Assistant
           </p>
         </div>
-      </div>
-
-      <div className="text-green-400 text-sm">
-        Gemini Connected
       </div>
 
     </div>

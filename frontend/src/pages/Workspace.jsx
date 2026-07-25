@@ -71,6 +71,7 @@ function Workspace() {
             setRunning={setRunning}
             sampleInput={problem.examples?.[0]?.input || ""}
             sampleOutput={problem.examples?.[0]?.output || ""}
+            problem={problem}
           />
         </div>
 

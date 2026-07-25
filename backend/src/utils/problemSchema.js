@@ -4,6 +4,7 @@ export function createProblem() {
     url: "",
 
     title: "",
+    difficulty: "",
 
     timeLimit: "",
     memoryLimit: "",

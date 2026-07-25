@@ -82,10 +82,6 @@ function ProblemImporter({ setProblem }) {
           🔗 Import Problem
         </h3>
 
-        <p className="text-sm text-gray-400 mt-1">
-          Paste a Codeforces problem URL.
-        </p>
-
       </div>
 
       {/* URL Input */}

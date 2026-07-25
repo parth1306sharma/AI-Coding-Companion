@@ -1,12 +1,27 @@
-import { chromium } from "playwright";
 import dotenv from "dotenv";
 dotenv.config();
 
 import Groq from "groq-sdk";
 
+import { importCodeforces } from "./adapters/codeforces.adapter.js";
+import { importLeetCode } from "./adapters/leetcode.adapter.js";
+import { importCodeChef } from "./adapters/codechef.adapter.js";
+import { importHackerRank } from "./adapters/hackerrank.adapter.js";
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+
+//----------------------------------------
+// Platform detection
+//----------------------------------------
+
+const PLATFORMS = [
+  { test: /codeforces\.com/i, name: "Codeforces", handler: importCodeforces },
+  { test: /leetcode\.com/i, name: "LeetCode", handler: importLeetCode },
+  { test: /codechef\.com/i, name: "CodeChef", handler: importCodeChef },
+  { test: /hackerrank\.com/i, name: "HackerRank", handler: importHackerRank },
+];
 
 export const importProblem = async (url) => {
   console.log("=================================");
@@ -18,160 +33,23 @@ export const importProblem = async (url) => {
     throw new Error("Problem URL is required.");
   }
 
-  if (!url.includes("codeforces.com")) {
-    throw new Error("Currently only Codeforces is supported.");
-  }
+  const platform = PLATFORMS.find((p) => p.test.test(url));
 
-  const browser = await chromium.launch({
-    headless: true,
-  });
-
-  try {
-    const context = await browser.newContext({
-      ignoreHTTPSErrors: true,
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    });
-
-    const page = await context.newPage();
-
-    console.log("Opening Codeforces...");
-
-    await page.goto(url, {
-      waitUntil: "domcontentloaded",
-      timeout: 60000,
-    });
-
-    await page.waitForSelector(".problem-statement", {
-      timeout: 15000,
-    });
-
-    console.log("Page loaded.");
-
-    //----------------------------------------
-    // Helper
-    //----------------------------------------
-
-  async function getHTML(selector, removeHeader = false) {
-  try {
-    return await page.locator(selector).evaluate(
-      (root, removeHeader) => {
-        const clone = root.cloneNode(true);
-
-        if (removeHeader) {
-          clone.querySelector(".header")?.remove();
-        }
-
-        // Remove rendered MathJax
-        clone.querySelectorAll(".MathJax").forEach((e) => e.remove());
-        clone.querySelectorAll(".MathJax_Preview").forEach((e) => e.remove());
-
-        // Inline math
-        clone.querySelectorAll("script[type='math/tex']").forEach((script) => {
-          script.replaceWith(
-            document.createTextNode(`\\(${script.textContent.trim()}\\)`)
-          );
-        });
-
-        // Display math
-        clone
-          .querySelectorAll("script[type='math/tex; mode=display']")
-          .forEach((script) => {
-            script.replaceWith(
-              document.createTextNode(`\\[${script.textContent.trim()}\\]`)
-            );
-          });
-
-        return clone.innerHTML;
-      },
-      removeHeader
+  if (!platform) {
+    throw new Error(
+      "Unsupported site. You can import problems from Codeforces, LeetCode, CodeChef, or HackerRank."
     );
-  } catch {
-    return "";
   }
-}
 
-    //----------------------------------------
-    // Title
-    //----------------------------------------
+  console.log(`Detected platform: ${platform.name}`);
 
-    const title = await page
-      .locator(".problem-statement .title")
-      .first()
-      .innerText();
-
-    //----------------------------------------
-    // Time
-    //----------------------------------------
-
-    const timeLimit = await page
-      .locator(".time-limit")
-      .innerText()
-      .catch(() => "");
-
-    //----------------------------------------
-    // Memory
-    //----------------------------------------
-
-    const memoryLimit = await page
-      .locator(".memory-limit")
-      .innerText()
-      .catch(() => "");
-
-    //----------------------------------------
-    // Sections
-    //----------------------------------------
-
-    const statement = await getHTML(".problem-statement", true);
-
-    const input = await getHTML(".input-specification");
-
-    const output = await getHTML(".output-specification");
-
-    const note = await getHTML(".note");
-
-    //----------------------------------------
-    // Sample Tests
-    //----------------------------------------
-
-    const examples = await page
-      .locator(".sample-test")
-      .evaluate((sample) => {
-        const inputs = [...sample.querySelectorAll(".input pre")].map((e) =>
-          e.innerText.trim()
-        );
-
-        const outputs = [...sample.querySelectorAll(".output pre")].map((e) =>
-          e.innerText.trim()
-        );
-
-        return inputs.map((input, i) => ({
-          input,
-          output: outputs[i] || "",
-        }));
-      })
-      .catch(() => []);
-
-    console.log("Successfully imported:", title);
-
-    return {
-      platform: "Codeforces",
-      url,
-      title: title.trim(),
-      timeLimit: timeLimit.trim(),
-      memoryLimit: memoryLimit.trim(),
-      statement,
-      input,
-      output,
-      note,
-      constraints: "",
-      examples,
-    };
+  try {
+    const problem = await platform.handler(url);
+    console.log("Successfully imported:", problem.title);
+    return problem;
   } catch (err) {
-    console.error("Scraping failed:", err);
+    console.error(`${platform.name} import failed:`, err.message);
     throw err;
-  } finally {
-    await browser.close();
   }
 };
 
