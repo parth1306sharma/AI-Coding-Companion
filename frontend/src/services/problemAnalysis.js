@@ -1,6 +1,6 @@
 export const analyzeProblem = async (problem) => {
   const response = await fetch(
-    "http://localhost:8000/api/v1/problem/analyze",
+    `${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/problem/analyze`,
     {
       method: "POST",
       headers: {

@@ -1,8 +1,45 @@
-import { useLayoutEffect, useRef } from "react";
-import renderMathInElement from "katex/contrib/auto-render";
+import { useMemo } from "react";
+import katex from "katex";
 import "katex/dist/katex.min.css";
 
+// ==========================================================
+// Math rendering — done as a plain string transform, not a
+// post-mount DOM scan. katex/contrib/auto-render has to walk
+// the live DOM after React commits and hope nothing about
+// mount order/timing gets in its way; that proved unreliable
+// in practice (some imports rendered fine, others silently
+// left raw "\(...\)" text on screen with no error). Rendering
+// straight into the HTML string before it's ever set is
+// simpler and has no window where it can silently no-op.
+// ==========================================================
+
+function renderOne(tex, displayMode) {
+  try {
+    return katex.renderToString(tex, {
+      throwOnError: false,
+      displayMode,
+      strict: false,
+    });
+  } catch {
+    // Katex itself choked (shouldn't happen with throwOnError: false,
+    // but just in case) — fall back to the untouched source rather
+    // than crashing the whole page.
+    return tex;
+  }
+}
+
+function renderMathInHtml(html) {
+  if (!html) return html;
+
+  return html
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, tex) => renderOne(tex, true))
+    .replace(/\$\$\$([\s\S]+?)\$\$\$/g, (_, tex) => renderOne(tex, false))
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, tex) => renderOne(tex, false));
+}
+
 function HtmlSection({ html }) {
+  const rendered = useMemo(() => renderMathInHtml(html), [html]);
+
   return (
     <div
       className="
@@ -55,29 +92,13 @@ function HtmlSection({ html }) {
         [&_img]:max-w-full
       "
       dangerouslySetInnerHTML={{
-        __html: html || "",
+        __html: rendered || "",
       }}
     />
   );
 }
 
 function ProblemViewer({ problem }) {
-  const containerRef = useRef(null);
-
-  useLayoutEffect(() => {
-  if (!containerRef.current) return;
-
-  renderMathInElement(containerRef.current, {
-    delimiters: [
-      { left: "$$$", right: "$$$", display: false },
-      { left: "\\(", right: "\\)", display: false },
-      { left: "\\[", right: "\\]", display: true },
-    ],
-    throwOnError: false,
-    strict: false,
-  });
-}, [problem]);
-
   if (!problem?.title) {
     return (
       <div className="text-gray-500 text-center py-10">
@@ -88,7 +109,6 @@ function ProblemViewer({ problem }) {
 
   return (
     <div
-      ref={containerRef}
       className="bg-[#252526] rounded-xl border border-[#323232] p-5"
     >
       {/* Title */}

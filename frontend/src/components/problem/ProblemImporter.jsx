@@ -26,7 +26,7 @@ function ProblemImporter({ setProblem }) {
       // Send request to backend
       // -----------------------------------------
       const response = await fetch(
-        "http://localhost:8000/api/v1/problem/import",
+       `${import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"}/problem/import`,
         {
           method: "POST",
 

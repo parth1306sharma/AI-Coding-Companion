@@ -4,6 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { chatWithAI } from "../services/ai";
 import { runCode, runLeetCodeCode } from "../services/runCode";
+import { outputsMatch } from "../utils/compareOutput.util";
 
 // ======================================
 // Regular code block — copy / insert into editor
@@ -71,11 +72,52 @@ function CodeBlock({ language, value, setCode, editorRef }) {
 // Codeforces/CodeChef use.
 // ======================================
 
+// AI-generated test cases sometimes come back with `input`/`output` as
+// a raw object (e.g. { nums: [...], target: 2 }) instead of a string -
+// React can't render an object directly as a child, which is what was
+// crashing this component. This normalizes either shape into a safe,
+// displayable, and runnable string: for objects, "key = value" pairs
+// matching the same format LeetCode's own examples use.
+function normalizeTestValue(v) {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+
+  if (typeof v === "object") {
+    if (Array.isArray(v)) return JSON.stringify(v);
+
+    return Object.entries(v)
+      .map(([k, val]) => `${k} = ${JSON.stringify(val)}`)
+      .join(", ");
+  }
+
+  return String(v);
+}
+
+// Compiler/runtime errors from the backend include full local temp-file
+// paths (e.g. C:\Users\...\Temp\exec-xxxx\Main.cpp or /tmp/exec-xxxx/Main.cpp)
+// that are noisy and leak machine-specific details. Collapse them down to
+// just the filename so the console stays readable.
+function cleanCompilerOutput(text) {
+  if (!text) return text;
+  return text
+    .replace(/[A-Za-z]:\\[^\s:]+\\([^\\\s:]+\.(cpp|c|java|py|js))/g, "$1")
+    .replace(/\/[^\s:]+\/([^/\s:]+\.(cpp|c|java|py|js))/g, "$1")
+    .trim();
+}
+
 function TestCaseBlock({ value, code, language, problem }) {
   const [cases] = useState(() => {
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(parsed) ? parsed : null;
+      if (!Array.isArray(parsed)) return null;
+
+      // Normalize every case's input/output up front so nothing
+      // downstream (display or execution) has to think about shape.
+      return parsed.map((tc) => ({
+        ...tc,
+        input: normalizeTestValue(tc.input),
+        output: normalizeTestValue(tc.output),
+      }));
     } catch {
       return null;
     }
@@ -122,22 +164,26 @@ function TestCaseBlock({ value, code, language, problem }) {
         return;
       }
 
-      const stderr = data?.compile?.stderr || data?.run?.stderr || "";
+      const stderr = cleanCompilerOutput(
+        data?.compile?.stderr || data?.run?.stderr || ""
+      );
       const actual = (data?.run?.stdout || "").trim();
       const expected = (tc.output || "").trim();
-      const pass = !stderr && expected !== "" && actual === expected;
+      const pass = !stderr && outputsMatch(actual, expected);
 
       setResults((prev) => ({
         ...prev,
         [index]: { status: "done", actual, stderr, pass },
       }));
     } catch (err) {
+      const backendMessage = cleanCompilerOutput(err?.response?.data?.message);
+
       setResults((prev) => ({
         ...prev,
         [index]: {
           status: "done",
           actual: "",
-          stderr: "Couldn't run this test case.",
+          stderr: backendMessage || "Couldn't run this test case.",
           pass: false,
         },
       }));
@@ -169,6 +215,15 @@ function TestCaseBlock({ value, code, language, problem }) {
         >
           ▶ Run All
         </button>
+      </div>
+
+      <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/30">
+        <p className="text-[11px] text-amber-300">
+          <span className="font-bold text-amber-200">⚠ Disclaimer:</span>{" "}
+          These test cases and expected outputs are AI-generated, not a
+          verified judge. A "doesn't match" result may just mean the AI got
+          it wrong — always double-check tricky cases by hand.
+        </p>
       </div>
 
       <div className="divide-y divide-gray-700 bg-[#1a1a1a]">

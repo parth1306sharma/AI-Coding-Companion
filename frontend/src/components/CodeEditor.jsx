@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 
 import { runCode, runLeetCodeCode } from "../services/runCode";
+import { outputsMatch } from "../utils/compareOutput.util";
 import { LANGUAGES } from "../utils/languages";
 
 // ======================================
@@ -239,7 +240,7 @@ function CodeEditor({
       const actual = (result.run?.stdout || "").trim();
       const expected = (sampleOutput || "").trim();
 
-      const passed = actual === expected;
+      const passed = outputsMatch(actual, expected);
 
       setOutput(`========== SAMPLE TEST ==========
 
@@ -262,7 +263,7 @@ ${passed ? "✅ PASSED" : "❌ FAILED"}
 `);
     } catch (err) {
       console.error(err);
-      setOutput("Execution failed.");
+      setOutput(err?.response?.data?.message || "Execution failed.");
     } finally {
       setRunning(false);
     }
