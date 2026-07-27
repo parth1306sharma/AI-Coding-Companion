@@ -20,13 +20,34 @@ export const importCodeforces = async (url) => {
     const page = await context.newPage();
 
     await page.goto(url, {
-      waitUntil: "domcontentloaded",
+      waitUntil: "networkidle",
       timeout: 60000,
     });
 
     await page.waitForSelector(".problem-statement", {
       timeout: 15000,
     });
+
+    // Codeforces typesets math with MathJax *after* the page loads —
+    // scraping too early leaves raw "$$$...$$$" / "\(...\)" source text
+    // in place of the <script type="math/tex"> tags we convert below.
+    // Hook into MathJax's own completion queue instead of guessing a
+    // fixed delay, so we only proceed once it's actually done.
+    await page
+      .evaluate(() => {
+        return new Promise((resolve) => {
+          if (window.MathJax?.Hub?.Queue) {
+            window.MathJax.Hub.Queue(() => resolve());
+            // Safety net in case the queue callback never fires.
+            setTimeout(resolve, 5000);
+          } else {
+            // No MathJax on the page (or a version we don't recognize) —
+            // give any client-side rendering a brief moment anyway.
+            setTimeout(resolve, 1000);
+          }
+        });
+      })
+      .catch(() => {});
 
     //----------------------------------------
     // Helper

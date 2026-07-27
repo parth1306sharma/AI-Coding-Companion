@@ -3,23 +3,12 @@ import { Link } from "react-router-dom";
 function ProjectCard({ project }) {
   return (
     <Link
-      to={`/project/${project._id}`}
-      style={{
-        textDecoration: "none",
-        color: "white",
-      }}
+      to={`/workspace/${project._id}`}
+      className="block no-underline text-white"
     >
-      <div
-        style={{
-          border: "1px solid #444",
-          borderRadius: "10px",
-          padding: "20px",
-          marginBottom: "20px",
-          background: "#2d2d2d",
-        }}
-      >
-        <h2>{project.title}</h2>
-        <p>{project.description}</p>
+      <div className="border border-gray-700 rounded-xl p-5 mb-5 bg-gray-800 hover:bg-gray-700 transition-colors">
+        <h2 className="text-lg font-semibold mb-1">{project.title}</h2>
+        <p className="text-gray-400 text-sm">{project.description}</p>
       </div>
     </Link>
   );

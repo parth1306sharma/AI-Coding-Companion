@@ -40,6 +40,19 @@ export function cppLiteral(type, value) {
   if (type === "character") return `'${String(value)}'`;
   if (type === "boolean") return value ? "true" : "false";
   if (type === "integer" || type === "long" || type === "double") {
+    // AI-generated test cases sometimes produce a value that overflows
+    // the declared type (e.g. target = 4000000000 for a param typed
+    // "integer"/int). Emitting that literal directly causes a C++
+    // narrowing-conversion compile error. Widen + cast instead of
+    // trusting the AI's value blindly.
+    const num = Number(value);
+    if (
+      type === "integer" &&
+      Number.isFinite(num) &&
+      (num > 2147483647 || num < -2147483648)
+    ) {
+      return `(int)(${String(value)}LL)`;
+    }
     return String(value);
   }
 

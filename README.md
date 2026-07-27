@@ -98,7 +98,3 @@ _[Add your deployed link here once available]_
 ## Screenshots
 
 _[Add a screenshot or GIF here]_
-
-## License
-
-_[Add a license here, e.g. MIT — or remove this section if you don't want one]_

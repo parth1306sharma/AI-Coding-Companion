@@ -31,6 +31,55 @@ function extractSlug(url) {
 // and constraints baked in as <pre> blocks / a trailing <ul>.
 // Pull those out so they can populate their own fields, and trim
 // them out of the main statement so nothing shows twice.
+// Some LeetCode problems format examples as plain bold paragraphs
+// ("Example 1:" / "Input: n = 31" / "Output: 3") instead of <pre>
+// blocks. This catches those, and removes the matched paragraphs
+// from the statement so they don't render twice.
+function parsePlainExamples($, root) {
+  const examples = [];
+  let current = null;
+  const toRemove = [];
+
+  root.find("p").each((_, el) => {
+    const text = $(el).text().trim();
+
+    if (/^example\s*\d*:?$/i.test(text)) {
+      if (current && (current.input || current.output)) {
+        examples.push(current);
+      }
+      current = { input: "", output: "" };
+      toRemove.push(el);
+      return;
+    }
+
+    const inputMatch = text.match(/^input:?\s*(.*)$/i);
+    if (inputMatch && current) {
+      current.input = inputMatch[1].trim();
+      toRemove.push(el);
+      return;
+    }
+
+    const outputMatch = text.match(/^output:?\s*(.*)$/i);
+    if (outputMatch && current) {
+      current.output = outputMatch[1].trim();
+      toRemove.push(el);
+      return;
+    }
+  });
+
+  if (current && (current.input || current.output)) {
+    examples.push(current);
+  }
+
+  // Only commit to this interpretation - and only remove the matched
+  // paragraphs - if we actually found something usable.
+  if (examples.length > 0) {
+    toRemove.forEach((el) => $(el).remove());
+  }
+
+  return examples;
+}
+
 function parseContent(html) {
   const $ = cheerio.load(`<div id="root">${html || ""}</div>`);
   const root = $("#root");
@@ -73,10 +122,15 @@ function parseContent(html) {
     }
   });
 
+  // Fallback: no <pre>-based examples found - try the plain-paragraph
+  // format some problems use instead.
+  const finalExamples =
+    examples.length > 0 ? examples : parsePlainExamples($, root);
+
   return {
     statement: root.html() || "",
     constraints,
-    examples,
+    examples: finalExamples,
   };
 }
 

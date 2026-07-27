@@ -19,18 +19,17 @@ function Home() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>My Projects</h1>
+    <div className="p-6 bg-gray-900 min-h-screen text-white">
+      <h1 className="text-2xl font-bold mb-4">My Projects</h1>
 
       {projects.length === 0 ? (
-        <p>No projects found.</p>
+        <p className="text-gray-400">No projects found.</p>
       ) : (
-        projects.map((project) => (
-          <ProjectCard
-            key={project._id}
-            project={project}
-          />
-        ))
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {projects.map((project) => (
+            <ProjectCard key={project._id} project={project} />
+          ))}
+        </div>
       )}
     </div>
   );
