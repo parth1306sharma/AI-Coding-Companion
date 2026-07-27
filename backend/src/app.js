@@ -11,10 +11,23 @@ import executeRouter from "./routes/execute.router.js";
 
 const app = express();
 
+// Allowed origins for CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://offbyone-kappa.vercel.app",
+];
+
 // Middleware
 app.use(
   cors({
-  origin: "https://offbyone-kappa.vercel.app",
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps, curl, Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
