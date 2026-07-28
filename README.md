@@ -1,100 +1,93 @@
-# OffByOne
+# OffByOne 🎯
 
-**Competitive Programming Assistant** — an AI-powered coding companion that imports problems directly from LeetCode and Codeforces, runs your code against real test cases, and gives you an AI co-pilot for explanations, bug-finding, and test-case generation — all inside a Monaco-based code editor.
+**An AI-powered workspace for competitive programmers.**
 
-## Features
+Stop tab-switching between your problem statement, an AI assistant, and your code editor. OffByOne brings problem import, an integrated code editor, code execution, and contextual AI help into a single workspace — so you can stay focused during practice and contest prep.
 
-- 🔗 **Import problems** directly from LeetCode / Codeforces URLs
-- 📝 **Monaco code editor** with syntax highlighting and multi-language support (C++, Python, and more)
-- ▶️ **Run code** against sample tests instantly with a live console
-- 🤖 **AI chat assistant** — explain code, find bugs, optimize, generate edge cases, all in natural language
-- 🧪 **AI-generated test cases** you can run and compare directly against your own output
-- ⚡ Real-time verdicts (Passed / Failed / Error) with a clean console UI
+🔗 **Live demo:** [offbyone-kappa.vercel.app](https://offbyone-kappa.vercel.app)
 
-## Tech Stack
+---
 
-| Layer | Tech |
-|---|---|
-| Frontend | React, Vite, Tailwind CSS, Monaco Editor |
-| Backend | Node.js, Express, MongoDB |
-| AI | Groq API |
+## ✨ Features
 
-## Getting Started
+- **Problem Import** — pull in problems directly from LeetCode by URL (Codeforces support in progress)
+- **Integrated Code Editor** — write and run code without leaving the platform
+- **AI Assistant** — explain code, generate test cases, spot edge cases, find bugs, and get optimization suggestions
+- **Project Workspace** — organize problems and solutions in one place
+
+---
+
+## 🛠️ Tech Stack
+
+**Frontend:** React, Vite, Tailwind CSS, React Router
+**Backend:** Node.js, Express, MongoDB (Mongoose)
+**AI:** Groq SDK
+**Deployment:** Vercel (frontend) · Render (backend) · MongoDB Atlas (database)
+
+---
+
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-- Node.js (v18 or higher recommended)
-- MongoDB running locally or a MongoDB Atlas connection string
+- Node.js (v18+)
+- A MongoDB connection string (local or Atlas)
 - A Groq API key ([console.groq.com](https://console.groq.com))
 
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/parth1306sharma/offbyone.git
-cd offbyone
-```
-
-### 2. Backend setup
-
+### Backend setup
 ```bash
 cd backend
 npm install
-cp .env.example .env
-```
-
-Open `.env` and fill in your own values:
-
-```dotenv
-PORT=8000
-MONGODB_URI=mongodb://127.0.0.1:27017
-DB_NAME=ai-coding-companion
-CORS_ORIGIN=*
-JWT_SECRET=your_random_secret_here
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-Start the backend:
-
-```bash
+cp .env.example .env   # then fill in your own values
 npm run dev
 ```
 
-### 3. Frontend setup
-
-In a new terminal:
-
+### Frontend setup
 ```bash
 cd frontend
 npm install
+cp .env.example .env   # then fill in your own values
 npm run dev
 ```
 
-### 4. Open the app
+The app will be running at `http://localhost:5173`, connected to a backend at `http://localhost:8000`.
 
-Visit `http://localhost:5173` in your browser.
+---
 
-## Project Structure
+## 📁 Environment Variables
 
+**Backend (`backend/.env`)**
 ```
-offbyone/
-├── backend/
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── routes/
-│   │   ├── models/
-│   │   └── utils/
-│   └── .env.example
-├── frontend/
-│   └── src/
-│       ├── components/
-│       └── services/
-└── README.md
+PORT=8000
+MONGODB_URI=your_mongodb_connection_string
+DB_NAME=your_database_name
+CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=your_random_secret
+GROQ_API_KEY=your_groq_api_key
 ```
 
-## Live Demo
+**Frontend (`frontend/.env`)**
+```
+VITE_API_URL=http://localhost:8000/api/v1
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
 
-_[Add your deployed link here once available]_
+---
 
-## Screenshots
+## 🗺️ Roadmap
 
-_[Add a screenshot or GIF here]_
+- [ ] Codeforces problem import
+- [ ] User authentication UI (signup/login)
+- [ ] Multi-language code execution support
+- [ ] Contest mode / timer
+
+---
+
+## 📸 Screenshots
+
+*(Add a couple of screenshots or a GIF of the app in action here)*
+
+---
+
+## 📝 License
+
+This project is open source and available for learning purposes.
