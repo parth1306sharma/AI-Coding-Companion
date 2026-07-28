@@ -84,10 +84,20 @@ VITE_GEMINI_API_KEY=your_gemini_api_key
 
 ## 📸 Screenshots
 
-*(Add a couple of screenshots or a GIF of the app in action here)*
+**Workspace**
+![Workspace](./Screenshots/ss.workspace.png)
+
+**LeetCode Problem Import**
+![LeetCode Import](./Screenshots/ss.import.png)
+
+**AI-Generated Test Cases**
+![AI Test Cases](./Screenshots/ss.ai-test.png)
 
 ---
 
 ## 📝 License
 
 This project is open source and available for learning purposes.
+
+
+## Made by [Parth Sharma](https://www.linkedin.com/in/parth1307sharma/) · [GitHub](parth1306sharma)
