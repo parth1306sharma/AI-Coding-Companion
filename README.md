@@ -95,9 +95,4 @@ VITE_GEMINI_API_KEY=your_gemini_api_key
 
 ---
 
-## 📝 License
-
-This project is open source and available for learning purposes.
-
-
 ## Made by [Parth Sharma](https://www.linkedin.com/in/parth1307sharma/) · [GitHub](parth1306sharma)
